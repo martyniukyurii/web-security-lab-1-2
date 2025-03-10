@@ -1,0 +1,48 @@
+### Змінні оточення
+@baseUrl = http://localhost:8080
+@username = admin
+@password = password
+
+### Отримати всі піци
+GET {{baseUrl}}/api/pizzas
+Authorization: Basic {{username}} {{password}}
+
+### Отримати піцу за ID
+GET {{baseUrl}}/api/pizzas/1
+Authorization: Basic {{username}} {{password}}
+
+### Додати нову піцу
+POST {{baseUrl}}/api/pizzas
+Authorization: Basic {{username}} {{password}}
+Content-Type: application/json
+
+{
+    "name": "Маргарита",
+    "size": "MEDIUM",
+    "toppings": ["Сир", "Томати", "Базилік"],
+    "price": 199.99
+}
+
+### Оновити піцу
+PUT {{baseUrl}}/api/pizzas/1
+Authorization: Basic {{username}} {{password}}
+Content-Type: application/json
+
+{
+    "name": "Маргарита Оновлена",
+    "size": "LARGE",
+    "toppings": ["Сир", "Томати", "Базилік", "Оливкова олія"],
+    "price": 249.99
+}
+
+### Видалити піцу
+DELETE {{baseUrl}}/api/pizzas/1
+Authorization: Basic {{username}} {{password}}
+
+### Знайти піци за розміром
+GET {{baseUrl}}/api/pizzas/size/LARGE
+Authorization: Basic {{username}} {{password}}
+
+### Знайти піци за ціною
+GET {{baseUrl}}/api/pizzas/price?maxPrice=200
+Authorization: Basic {{username}} {{password}} 

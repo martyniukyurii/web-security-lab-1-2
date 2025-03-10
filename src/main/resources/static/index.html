@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Pizza API Тестер</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .auth-form {
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .api-section {
+            margin-top: 20px;
+        }
+        .response {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .error {
+            color: red;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pizza API Тестер</h1>
+        
+        <div class="auth-form">
+            <h2>Авторизація</h2>
+            <input type="text" id="username" placeholder="Логін" value="admin">
+            <input type="password" id="password" placeholder="Пароль" value="password">
+            <button onclick="setAuth()">Встановити авторизацію</button>
+        </div>
+
+        <div class="api-section">
+            <h2>API Запити</h2>
+            
+            <h3>Отримати всі піци</h3>
+            <button onclick="getAllPizzas()">GET /api/pizzas</button>
+            <div id="getAllResponse" class="response"></div>
+
+            <h3>Отримати піцу за ID</h3>
+            <input type="number" id="pizzaId" placeholder="ID піци" value="1">
+            <button onclick="getPizzaById()">GET /api/pizzas/{id}</button>
+            <div id="getByIdResponse" class="response"></div>
+
+            <h3>Додати нову піцу</h3>
+            <textarea id="newPizza" rows="4">{
+    "name": "Нова Піца",
+    "size": "MEDIUM",
+    "toppings": ["Сир", "Томати", "Базилік"],
+    "price": 199.99
+}</textarea>
+            <button onclick="addPizza()">POST /api/pizzas</button>
+            <div id="addPizzaResponse" class="response"></div>
+
+            <h3>Оновити піцу</h3>
+            <input type="number" id="updatePizzaId" placeholder="ID піци" value="1">
+            <textarea id="updatePizza" rows="4">{
+    "name": "Оновлена Піца",
+    "size": "LARGE",
+    "toppings": ["Сир", "Томати", "Базилік", "Оливкова олія"],
+    "price": 249.99
+}</textarea>
+            <button onclick="updatePizza()">PUT /api/pizzas/{id}</button>
+            <div id="updatePizzaResponse" class="response"></div>
+
+            <h3>Видалити піцу</h3>
+            <input type="number" id="deletePizzaId" placeholder="ID піци" value="1">
+            <button onclick="deletePizza()">DELETE /api/pizzas/{id}</button>
+            <div id="deletePizzaResponse" class="response"></div>
+
+            <h3>Знайти піци за розміром</h3>
+            <input type="text" id="pizzaSize" placeholder="Розмір (SMALL/MEDIUM/LARGE)" value="LARGE">
+            <button onclick="getPizzasBySize()">GET /api/pizzas/size/{size}</button>
+            <div id="getBySizeResponse" class="response"></div>
+
+            <h3>Знайти піци за ціною</h3>
+            <input type="number" id="maxPrice" placeholder="Максимальна ціна" value="200">
+            <button onclick="getPizzasByPrice()">GET /api/pizzas/price</button>
+            <div id="getByPriceResponse" class="response"></div>
+        </div>
+    </div>
+
+    <script>
+        let auth = btoa('admin:password');
+
+        function setAuth() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            auth = btoa(`${username}:${password}`);
+            alert('Авторизація оновлена!');
+        }
+
+        async function makeRequest(url, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method,
+                    headers: {
+                        'Authorization': `Basic ${auth}`,
+                        'Content-Type': 'application/json'
+                    }
+                };
+
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+
+                const response = await fetch(url, options);
+                const data = await response.text();
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return data;
+            } catch (error) {
+                return `Помилка: ${error.message}`;
+            }
+        }
+
+        async function getAllPizzas() {
+            const response = await makeRequest('/api/pizzas');
+            document.getElementById('getAllResponse').textContent = response;
+        }
+
+        async function getPizzaById() {
+            const id = document.getElementById('pizzaId').value;
+            const response = await makeRequest(`/api/pizzas/${id}`);
+            document.getElementById('getByIdResponse').textContent = response;
+        }
+
+        async function addPizza() {
+            const pizza = JSON.parse(document.getElementById('newPizza').value);
+            const response = await makeRequest('/api/pizzas', 'POST', pizza);
+            document.getElementById('addPizzaResponse').textContent = response;
+        }
+
+        async function updatePizza() {
+            const id = document.getElementById('updatePizzaId').value;
+            const pizza = JSON.parse(document.getElementById('updatePizza').value);
+            const response = await makeRequest(`/api/pizzas/${id}`, 'PUT', pizza);
+            document.getElementById('updatePizzaResponse').textContent = response;
+        }
+
+        async function deletePizza() {
+            const id = document.getElementById('deletePizzaId').value;
+            const response = await makeRequest(`/api/pizzas/${id}`, 'DELETE');
+            document.getElementById('deletePizzaResponse').textContent = response;
+        }
+
+        async function getPizzasBySize() {
+            const size = document.getElementById('pizzaSize').value;
+            const response = await makeRequest(`/api/pizzas/size/${size}`);
+            document.getElementById('getBySizeResponse').textContent = response;
+        }
+
+        async function getPizzasByPrice() {
+            const maxPrice = document.getElementById('maxPrice').value;
+            const response = await makeRequest(`/api/pizzas/price?maxPrice=${maxPrice}`);
+            document.getElementById('getByPriceResponse').textContent = response;
+        }
+    </script>
+</body>
+</html> 
