@@ -56,6 +56,12 @@
             color: red;
             margin-top: 5px;
         }
+        .jwt-section {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -63,10 +69,17 @@
         <h1>Pizza API Тестер</h1>
         
         <div class="auth-form">
-            <h2>Авторизація</h2>
+            <h2>Базова Авторизація</h2>
             <input type="text" id="username" placeholder="Логін" value="admin">
             <input type="password" id="password" placeholder="Пароль" value="password">
-            <button onclick="setAuth()">Встановити авторизацію</button>
+            <button onclick="setAuth()">Встановити базову авторизацію</button>
+        </div>
+
+        <div class="jwt-section">
+            <h2>JWT Авторизація</h2>
+            <button onclick="getJwtToken()">Отримати JWT токен</button>
+            <button onclick="clearJwtToken()">Видалити JWT токен</button>
+            <div id="jwtResponse" class="response"></div>
         </div>
 
         <div class="api-section">
@@ -116,27 +129,78 @@
             <input type="number" id="maxPrice" placeholder="Максимальна ціна" value="200">
             <button onclick="getPizzasByPrice()">GET /api/pizzas/price</button>
             <div id="getByPriceResponse" class="response"></div>
+
+            <h3>Додати спеціальну піцу</h3>
+            <textarea id="specialPizza" rows="4">{
+    "name": "Спеціальна Піца",
+    "size": "LARGE",
+    "toppings": ["Трюфелі", "Пармезан", "Рукола"],
+    "price": 399.99,
+    "isSpecial": true
+}</textarea>
+            <button onclick="addSpecialPizza()">POST /api/pizzas/special</button>
+            <div id="specialPizzaResponse" class="response"></div>
+
+            <h3>Оновити рейтинг піци</h3>
+            <input type="number" id="ratingPizzaId" placeholder="ID піци" value="1">
+            <input type="number" id="rating" placeholder="Рейтинг (1-5)" value="5" min="1" max="5">
+            <button onclick="updatePizzaRating()">PUT /api/pizzas/{id}/rating</button>
+            <div id="ratingResponse" class="response"></div>
         </div>
     </div>
 
     <script>
         let auth = btoa('admin:password');
+        let jwtToken = null;
 
         function setAuth() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             auth = btoa(`${username}:${password}`);
-            alert('Авторизація оновлена!');
+            alert('Базову авторизацію оновлено!');
+        }
+
+        async function getJwtToken() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`/api/auth/token?username=${username}&password=${password}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    jwtToken = data.token;
+                    document.getElementById('jwtResponse').textContent = `JWT токен отримано: ${jwtToken}`;
+                } else {
+                    document.getElementById('jwtResponse').textContent = `Помилка: ${data.error}`;
+                }
+            } catch (error) {
+                document.getElementById('jwtResponse').textContent = `Помилка: ${error.message}`;
+            }
+        }
+
+        function clearJwtToken() {
+            jwtToken = null;
+            document.getElementById('jwtResponse').textContent = 'JWT токен видалено';
         }
 
         async function makeRequest(url, method = 'GET', body = null) {
             try {
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+
+                if (jwtToken) {
+                    headers['Authorization'] = `Bearer ${jwtToken}`;
+                } else {
+                    headers['Authorization'] = `Basic ${auth}`;
+                }
+
                 const options = {
                     method,
-                    headers: {
-                        'Authorization': `Basic ${auth}`,
-                        'Content-Type': 'application/json'
-                    }
+                    headers
                 };
 
                 if (body) {
@@ -196,6 +260,19 @@
             const maxPrice = document.getElementById('maxPrice').value;
             const response = await makeRequest(`/api/pizzas/price?maxPrice=${maxPrice}`);
             document.getElementById('getByPriceResponse').textContent = response;
+        }
+
+        async function addSpecialPizza() {
+            const pizza = JSON.parse(document.getElementById('specialPizza').value);
+            const response = await makeRequest('/api/pizzas/special', 'POST', pizza);
+            document.getElementById('specialPizzaResponse').textContent = response;
+        }
+
+        async function updatePizzaRating() {
+            const id = document.getElementById('ratingPizzaId').value;
+            const rating = document.getElementById('rating').value;
+            const response = await makeRequest(`/api/pizzas/${id}/rating`, 'PUT', { rating: parseInt(rating) });
+            document.getElementById('ratingResponse').textContent = response;
         }
     </script>
 </body>

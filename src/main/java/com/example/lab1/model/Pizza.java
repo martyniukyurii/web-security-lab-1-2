@@ -8,6 +8,8 @@ public class Pizza {
     private String size;
     private List<String> toppings;
     private double price;
+    private boolean isSpecial;
+    private int rating;
 
     public Pizza() {}
 
@@ -17,6 +19,8 @@ public class Pizza {
         this.size = size;
         this.toppings = toppings;
         this.price = price;
+        this.isSpecial = false;
+        this.rating = 0;
     }
 
     // Getters and Setters
@@ -34,4 +38,20 @@ public class Pizza {
     
     public double getPrice() { return price; }
     public void setPrice(double price) { this.price = price; }
+
+    public boolean getIsSpecial() {
+        return isSpecial;
+    }
+
+    public void setIsSpecial(boolean special) {
+        isSpecial = special;
+    }
+
+    public int getRating() {
+        return rating;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
+    }
 } 

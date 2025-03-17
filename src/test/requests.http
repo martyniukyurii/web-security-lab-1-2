@@ -3,9 +3,22 @@
 @username = admin
 @password = password
 
-### Отримати всі піци
+### Отримати JWT токен
+POST {{baseUrl}}/api/auth/token?username={{username}}&password={{password}}
+
+### Перевірити JWT токен (спочатку скопіюйте токен з відповіді попереднього запиту)
+POST {{baseUrl}}/api/auth/validate
+Content-Type: application/x-www-form-urlencoded
+
+token=ваш_токен_тут&username={{username}}
+
+### Отримати всі піци (Basic Auth)
 GET {{baseUrl}}/api/pizzas
 Authorization: Basic {{username}} {{password}}
+
+### Отримати всі піци (JWT Auth - замініть токен на той, що отримали)
+GET {{baseUrl}}/api/pizzas
+Authorization: Bearer ваш_токен_тут
 
 ### Отримати піцу за ID
 GET {{baseUrl}}/api/pizzas/1
@@ -23,6 +36,19 @@ Content-Type: application/json
     "price": 199.99
 }
 
+### Додати спеціальну піцу
+POST {{baseUrl}}/api/pizzas/special
+Authorization: Basic {{username}} {{password}}
+Content-Type: application/json
+
+{
+    "name": "Трюфельна Піца",
+    "size": "LARGE",
+    "toppings": ["Трюфелі", "Пармезан", "Рукола", "Оливкова олія"],
+    "price": 499.99,
+    "isSpecial": true
+}
+
 ### Оновити піцу
 PUT {{baseUrl}}/api/pizzas/1
 Authorization: Basic {{username}} {{password}}
@@ -35,6 +61,15 @@ Content-Type: application/json
     "price": 249.99
 }
 
+### Оновити рейтинг піци
+PUT {{baseUrl}}/api/pizzas/1/rating
+Authorization: Basic {{username}} {{password}}
+Content-Type: application/json
+
+{
+    "rating": 5
+}
+
 ### Видалити піцу
 DELETE {{baseUrl}}/api/pizzas/1
 Authorization: Basic {{username}} {{password}}
@@ -45,4 +80,28 @@ Authorization: Basic {{username}} {{password}}
 
 ### Знайти піци за ціною
 GET {{baseUrl}}/api/pizzas/price?maxPrice=200
-Authorization: Basic {{username}} {{password}} 
+Authorization: Basic {{username}} {{password}}
+
+### Приклади використання JWT токена (замініть токен на отриманий):
+
+### Додати спеціальну піцу з JWT
+POST {{baseUrl}}/api/pizzas/special
+Authorization: Bearer ваш_токен_тут
+Content-Type: application/json
+
+{
+    "name": "Преміум Піца",
+    "size": "LARGE",
+    "toppings": ["Лобстер", "Чорний трюфель", "Золоті пластівці"],
+    "price": 999.99,
+    "isSpecial": true
+}
+
+### Оновити рейтинг піци з JWT
+PUT {{baseUrl}}/api/pizzas/2/rating
+Authorization: Bearer ваш_токен_тут
+Content-Type: application/json
+
+{
+    "rating": 4
+} 
