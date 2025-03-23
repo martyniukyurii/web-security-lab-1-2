@@ -104,4 +104,76 @@ Content-Type: application/json
 
 {
     "rating": 4
-} 
+}
+
+### Отримання JWT токена
+POST http://localhost:8080/api/auth/token?username=user&password=user
+Content-Type: application/json
+
+### Отримання JWT токена для адміна
+POST http://localhost:8080/api/auth/token?username=admin&password=admin
+Content-Type: application/json
+
+### Отримання JWT токена для суперадміна
+POST http://localhost:8080/api/auth/token?username=superadmin&password=superadmin
+Content-Type: application/json
+
+### Отримання всіх піц (доступно для всіх ролей)
+GET http://localhost:8080/api/pizzas
+Authorization: Bearer ваш_токен
+
+### Отримання піци за ID (доступно для всіх ролей)
+GET http://localhost:8080/api/pizzas/1
+Authorization: Bearer ваш_токен
+
+### Додавання нової піци (доступно для всіх ролей)
+POST http://localhost:8080/api/pizzas
+Authorization: Bearer ваш_токен
+Content-Type: application/json
+
+{
+    "name": "Margherita",
+    "size": "Medium",
+    "toppings": ["Tomato Sauce", "Mozzarella", "Basil"],
+    "price": 199.99
+}
+
+### Оновлення піци (доступно для всіх ролей)
+PUT http://localhost:8080/api/pizzas/1
+Authorization: Bearer ваш_токен
+Content-Type: application/json
+
+{
+    "name": "Margherita",
+    "size": "Large",
+    "toppings": ["Tomato Sauce", "Mozzarella", "Basil"],
+    "price": 249.99
+}
+
+### Видалення піци (доступно для всіх ролей)
+DELETE http://localhost:8080/api/pizzas/1
+Authorization: Bearer ваш_токен
+
+### Пошук піц за розміром (доступно для всіх ролей)
+GET http://localhost:8080/api/pizzas/size/Medium
+Authorization: Bearer ваш_токен
+
+### Пошук піц за ціною (доступно для всіх ролей)
+GET http://localhost:8080/api/pizzas/price?maxPrice=200
+Authorization: Bearer ваш_токен
+
+### Додавання спеціальної піци (тільки для адміна)
+POST http://localhost:8080/api/pizzas/admin/special
+Authorization: Bearer ваш_токен
+Content-Type: application/json
+
+{
+    "name": "Special Margherita",
+    "size": "Large",
+    "toppings": ["Tomato Sauce", "Mozzarella", "Basil", "Extra Cheese"],
+    "price": 299.99
+}
+
+### Оновлення рейтингу піци (тільки для адміна)
+PUT http://localhost:8080/api/pizzas/admin/1/rating?rating=5
+Authorization: Bearer ваш_токен 

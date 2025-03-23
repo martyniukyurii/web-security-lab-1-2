@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тестування API Піцерії</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .auth-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+        }
+        .request-section {
+            margin-top: 20px;
+        }
+        .request-group {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        .request-item {
+            margin-bottom: 20px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .response {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        h2 {
+            color: #333;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Тестування API Піцерії</h1>
+        
+        <div class="auth-section">
+            <h2>Автентифікація</h2>
+            <input type="text" id="username" placeholder="Логін" value="user">
+            <input type="password" id="password" placeholder="Пароль" value="user123">
+            <button onclick="getToken()">Отримати JWT токен</button>
+            <button onclick="deleteToken()">Видалити JWT токен</button>
+            <div id="tokenResponse" class="response"></div>
+        </div>
+
+        <div class="request-section">
+            <h2>Публічні запити (без автентифікації)</h2>
+            <div class="request-group">
+                <div class="request-item">
+                    <h3>Отримати список всіх піц</h3>
+                    <button onclick="getPublicPizzas()">GET /api/pizzas/public/list</button>
+                    <div id="publicPizzasResponse" class="response"></div>
+                </div>
+                <div class="request-item">
+                    <h3>Отримати піцу за ID</h3>
+                    <input type="text" id="publicPizzaId" placeholder="ID піци">
+                    <button onclick="getPublicPizza()">GET /api/pizzas/public/{id}</button>
+                    <div id="publicPizzaResponse" class="response"></div>
+                </div>
+            </div>
+
+           
+
+            <h2>Запити для адміністраторів (без спеціальних піц)</h2>
+            <div class="request-group">
+                <div class="request-item">
+                    <h3>Додати нову піцу</h3>
+                    <textarea id="adminPizza" placeholder='{"name": "Нова Піца", "size": "Велика", "toppings": ["Сир", "Томати"], "price": 199.99, "isSpecial": false}'></textarea>
+                    <button onclick="addAdminPizza()">POST /api/pizzas/admin/add</button>
+                    <div id="addAdminPizzaResponse" class="response"></div>
+                </div>
+                <div class="request-item">
+                    <h3>Оновити піцу</h3>
+                    <input type="text" id="adminPizzaId" placeholder="ID піци">
+                    <textarea id="adminPizzaUpdate" placeholder='{"name": "Оновлена Піца", "size": "Велика", "toppings": ["Сир", "Томати"], "price": 199.99, "isSpecial": false}'></textarea>
+                    <button onclick="updateAdminPizza()">PUT /api/pizzas/admin/{id}</button>
+                    <div id="updateAdminPizzaResponse" class="response"></div>
+                </div>
+                <div class="request-item">
+                    <h3>Видалити піцу</h3>
+                    <input type="text" id="adminPizzaDeleteId" placeholder="ID піци">
+                    <button onclick="deleteAdminPizza()">DELETE /api/pizzas/admin/{id}</button>
+                    <div id="deleteAdminPizzaResponse" class="response"></div>
+                </div>
+            </div>
+
+            <h2>Запити для суперадміністраторів (включно зі спеціальними піцами)</h2>
+            <div class="request-group">
+                <div class="request-item">
+                    <h3>Отримати список спеціальних піц</h3>
+                    <button onclick="getSpecialPizzas()">GET /api/pizzas/superadmin/special</button>
+                    <div id="specialPizzasResponse" class="response"></div>
+                </div>
+                <div class="request-item">
+                    <h3>Додати піцу (можна спеціальну)</h3>
+                    <textarea id="superAdminPizza" placeholder='{"name": "Спеціальна Піца", "size": "Велика", "toppings": ["Трюфелі", "Золото"], "price": 999.99, "isSpecial": true}'></textarea>
+                    <button onclick="addSuperAdminPizza()">POST /api/pizzas/superadmin/add</button>
+                    <div id="addSuperAdminPizzaResponse" class="response"></div>
+                </div>
+                <div class="request-item">
+                    <h3>Оновити піцу</h3>
+                    <input type="text" id="superAdminPizzaId" placeholder="ID піци">
+                    <textarea id="superAdminPizzaUpdate" placeholder='{"name": "Оновлена Спеціальна", "size": "Велика", "toppings": ["Трюфелі", "Золото"], "price": 1999.99, "isSpecial": true}'></textarea>
+                    <button onclick="updateSuperAdminPizza()">PUT /api/pizzas/superadmin/{id}</button>
+                    <div id="updateSuperAdminPizzaResponse" class="response"></div>
+                </div>
+                <div class="request-item">
+                    <h3>Видалити піцу</h3>
+                    <input type="text" id="superAdminPizzaDeleteId" placeholder="ID піци">
+                    <button onclick="deleteSuperAdminPizza()">DELETE /api/pizzas/superadmin/{id}</button>
+                    <div id="deleteSuperAdminPizzaResponse" class="response"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Функції для роботи з JWT токеном
+        async function getToken() {
+            try {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                console.log('Getting token for user:', username);
+                
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                console.log('Auth response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
+                }
+
+                // Отримуємо токен як текст
+                const token = await response.text();
+                console.log('Received token:', token);
+                
+                if (!token) {
+                    throw new Error('No token received in response');
+                }
+
+                localStorage.setItem('jwtToken', token);
+                document.getElementById('tokenResponse').textContent = 'Токен отримано успішно';
+                document.getElementById('tokenResponse').className = 'response success';
+            } catch (error) {
+                console.error('Error getting token:', error);
+                document.getElementById('tokenResponse').textContent = 'Помилка: ' + error.message;
+                document.getElementById('tokenResponse').className = 'response error';
+            }
+        }
+
+        function deleteToken() {
+            localStorage.removeItem('jwtToken');
+            document.getElementById('tokenResponse').textContent = 'Токен видалено';
+            document.getElementById('tokenResponse').className = 'response';
+        }
+
+        // Загальна функція для виконання запитів
+        async function makeRequest(url, method = 'GET', body = null) {
+            try {
+                console.log(`Making ${method} request to ${url}`);
+                console.log('Request body:', body);
+                
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                };
+
+                // Get token from localStorage
+                const token = localStorage.getItem('jwtToken');
+                if (token) {
+                    console.log('Using JWT token:', token);
+                    headers['Authorization'] = `Bearer ${token}`;
+                } else {
+                    console.log('No JWT token found in localStorage');
+                }
+
+                const options = {
+                    method,
+                    headers,
+                    credentials: 'same-origin'
+                };
+
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+
+                console.log('Request options:', options);
+                const response = await fetch(url, options);
+                console.log('Response status:', response.status);
+                
+                const contentType = response.headers.get('content-type');
+                let data;
+                
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    data = await response.text();
+                }
+                
+                console.log('Response data:', data);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${JSON.stringify(data)}`);
+                }
+
+                return {
+                    status: response.status,
+                    data: data
+                };
+            } catch (error) {
+                console.error('Request error:', error);
+                throw error;
+            }
+        }
+
+        // Публічні запити
+        async function getPublicPizzas() {
+            const result = await makeRequest('/api/pizzas/public/list', 'GET');
+            document.getElementById('publicPizzasResponse').textContent = JSON.stringify(result, null, 2);
+        }
+
+        async function getPublicPizza() {
+            const id = document.getElementById('publicPizzaId').value;
+            const result = await makeRequest(`/api/pizzas/public/${id}`, 'GET');
+            document.getElementById('publicPizzaResponse').textContent = JSON.stringify(result, null, 2);
+        }
+
+        // Запити для користувачів
+        async function getUserPizzas() {
+            const result = await makeRequest('/api/pizzas/user/list', 'GET');
+            document.getElementById('userPizzasResponse').textContent = JSON.stringify(result, null, 2);
+        }
+
+        // Запити для адміністраторів
+        async function addAdminPizza() {
+            try {
+                const pizzaText = document.getElementById('adminPizza').value;
+                console.log('Pizza JSON:', pizzaText);
+                
+                const pizza = JSON.parse(pizzaText);
+                console.log('Parsed pizza:', pizza);
+                
+                const result = await makeRequest('/api/pizzas/admin/add', 'POST', pizza);
+                document.getElementById('addAdminPizzaResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                console.error('Error in addAdminPizza:', error);
+                document.getElementById('addAdminPizzaResponse').textContent = JSON.stringify({
+                    status: 500,
+                    data: {
+                        error: 'Помилка при парсингу JSON: ' + error.message
+                    }
+                }, null, 2);
+            }
+        }
+
+        async function updateAdminPizza() {
+            const id = document.getElementById('adminPizzaId').value;
+            const pizza = JSON.parse(document.getElementById('adminPizzaUpdate').value);
+            const result = await makeRequest(`/api/pizzas/admin/${id}`, 'PUT', pizza);
+            document.getElementById('updateAdminPizzaResponse').textContent = JSON.stringify(result, null, 2);
+        }
+
+        async function deleteAdminPizza() {
+            const id = document.getElementById('adminPizzaDeleteId').value;
+            const result = await makeRequest(`/api/pizzas/admin/${id}`, 'DELETE');
+            document.getElementById('deleteAdminPizzaResponse').textContent = JSON.stringify(result, null, 2);
+        }
+
+        // Запити для суперадміністраторів
+        async function getSpecialPizzas() {
+            try {
+                console.log('Fetching special pizzas...');
+                const result = await makeRequest('/api/pizzas/superadmin/special', 'GET');
+                console.log('Special pizzas response:', result);
+                document.getElementById('specialPizzasResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                console.error('Error fetching special pizzas:', error);
+                document.getElementById('specialPizzasResponse').textContent = JSON.stringify({
+                    status: 500,
+                    data: {
+                        error: error.message
+                    }
+                }, null, 2);
+            }
+        }
+
+        async function addSuperAdminPizza() {
+            const pizza = JSON.parse(document.getElementById('superAdminPizza').value);
+            const result = await makeRequest('/api/pizzas/superadmin/add', 'POST', pizza);
+            document.getElementById('addSuperAdminPizzaResponse').textContent = JSON.stringify(result, null, 2);
+        }
+
+        async function updateSuperAdminPizza() {
+            const id = document.getElementById('superAdminPizzaId').value;
+            const pizza = JSON.parse(document.getElementById('superAdminPizzaUpdate').value);
+            const result = await makeRequest(`/api/pizzas/superadmin/${id}`, 'PUT', pizza);
+            document.getElementById('updateSuperAdminPizzaResponse').textContent = JSON.stringify(result, null, 2);
+        }
+
+        async function deleteSuperAdminPizza() {
+            const id = document.getElementById('superAdminPizzaDeleteId').value;
+            const result = await makeRequest(`/api/pizzas/superadmin/${id}`, 'DELETE');
+            document.getElementById('deleteSuperAdminPizzaResponse').textContent = JSON.stringify(result, null, 2);
+        }
+    </script>
+</body>
+</html> 
